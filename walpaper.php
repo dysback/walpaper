@@ -1,41 +1,30 @@
 <?php
 
 $url= 'https://unsplash.com/wallpapers';
-
-
+$border = 30;
+$ofset = 3;
 $r2 = shell_exec("curl $url");
 $links = getLinks($r2);
 $picture_link = $links[rand(0, count($links) - 1)];
-echo $picture_link;
 $rand = rand(0, 10000);
 $picture_file = "/home/dzelenika/dev/walpaper/slika{$rand}.jpg";
 $fortune_file = "/home/dzelenika/dev/walpaper/slika{$rand}f.jpg";
 $walpaper_file = "/home/dzelenika/dev/walpaper/slika{$rand}w.jpg";
 
+//echo $picture_link;
 //echo $picture_file;
-//shell_exec("/home/dzelenika/dev/walpaper/addtext.sh \"$picture_file\" \"$picture_link\"");
-/*
-shell_exec("wget $picture_link -O {$picture_file}");
-$convert = "fortune | xargs -I{} convert -pointsize 60 -fill red -draw 'text 470,660 \"{}\" ' {$picture_file} {$picture_file}";
-echo $convert;
-shell_exec($convert);
-shell_exec("gsettings set org.gnome.desktop.background picture-uri-dark file://{$picture_file}");
-*/
 
 shell_exec("wget $picture_link -O {$picture_file}");
 
 $W = trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)"));
 $H = trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)"));
-
 $size = shell_exec("identify -ping -format '%w %h' '$picture_file'");
 [$iW, $iH] = explode(' ', $size);
-
 echo "\nScreen(HxW): $H x $W";
 echo "\nPicture(HxW): $iH x $iW";
 
 $hpw = $H / $W;
 $ihpw = $iH / $iW;
-
 if($ihpw > $hpw) {
     $k = $W / $iW;
     $top = ($iH * $k - $H) / 2 + 0.3 * $H;
@@ -48,24 +37,35 @@ if($ihpw > $hpw) {
 $top = (int)$top;
 $left = (int)$left;
 
+$topB = $top + $border - $ofset;
+$leftB = $left + $border  - $ofset;
+
 $k *= 100;
 $convert = "convert '$picture_file' -resize $k% '$picture_file'";
 echo "\n$convert";
 shell_exec($convert);
-echo "\nPicture reaized (HxW): " . (int)($iH * $k / 100) . " x " . (int)($iW * $k / 100) . "\n";
-echo "\nk / Top / Left: $k: $top + $left";
 
+//echo "\nPicture reaized (HxW): " . (int)($iH * $k / 100) . " x " . (int)($iW * $k / 100) . "\n";
+//echo "\nk / Top / Left: $k: $top + $left";
 
 $fortune = trim(shell_exec("fortune"));
-
 $font_size = fontSize($fortune);
-$convert = "convert -size 1150x -pointsize {$font_size} -background '#c003' -fill '#fffc'  caption:\"{$fortune}\"  -bordercolor '#7f0' -border 25 '{$fortune_file}'";
+$convert = "convert -size 1150x -pointsize {$font_size} -background '#fc0' -fill '#fff'  caption:\"{$fortune}\"  -bordercolor '#fc0' -border {$border} '{$fortune_file}'";
 echo "\n$convert\n";
 shell_exec($convert);
 
-$convert = "convert '{$picture_file}' '{$fortune_file}' -geometry +{$left}+{$top} -composite '{$walpaper_file}'";
+//$convert = "convert '{$picture_file}' -dissolve 30 '{$fortune_file}' -geometry +{$left}+{$top} -composite  '{$walpaper_file}'";
+$convert = "composite  -dissolve 50 '{$fortune_file}' '{$picture_file}' -geometry +{$left}+{$top} '{$walpaper_file}'";
+
 echo "\n$convert\n";
 shell_exec($convert);
+
+$convert = "convert '{$walpaper_file}' -size 1150x -background '#fc00' -fill '#fffc' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'";
+echo "\n$convert\n";
+shell_exec($convert);
+
+
+
 
 shell_exec("gsettings set org.gnome.desktop.background picture-uri-dark file://{$walpaper_file}");
 shell_exec("gsettings set org.gnome.desktop.background picture-options 'centered'");
