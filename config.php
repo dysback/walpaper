@@ -3,8 +3,12 @@
 const URL = "https://unsplash.com/wallpapers";
 const AJAX_URL = "https://unsplash.com/napi/landing_pages/wallpapers";
 
-const CHANGE_MIN = 10;
+const CHANGE_MIN = 6;
+const DISPLAY_FORTUNE = true;
+const DISPLAY_WATCH = true;
 
+const WATCH_FORMAT = "l jS \of F Y H:i";
+//const WATCH_FORMAT = 'H:i';
 
 const BORDER = 20;
 const SHADOW_OFFSET = 4;

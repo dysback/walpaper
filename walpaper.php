@@ -40,7 +40,7 @@ if($ihpw > $hpw) {
     $left = 0.4 * $W;
 
     $topH = ($iH * $k - $H) / 2 + 0.8 * $H;
-    $leftH = 0.8 * $W;
+    $leftH = 0.05 * $W;
 
 } else {
     $k = $H / $iH;
@@ -48,13 +48,13 @@ if($ihpw > $hpw) {
     $left = ($iW * $k - $W) / 2 + 0.4 * $W;
 
     $topH  = 0.8 * $H;
-    $leftH = ($iW * $k - $W) / 2 + 0.8 * $W;
+    $leftH = ($iW * $k - $W) / 2 + 0.05 * $W;
 }
 $top = (int)$top;
 $left = (int)$left;
 
 $topB = $top + BORDER + SHADOW_OFFSET;
-$leftB = $left + BORDER  + SHADOW_OFFSET;
+$leftB = $left + BORDER + SHADOW_OFFSET;
 
 $topH = (int)$topH;
 $leftH = (int)$leftH;
@@ -70,33 +70,40 @@ if($minute % CHANGE_MIN == 0) {
     echo "\nPicture resized (HxW): " . (int)($iH * $k / 100) . " x " . (int)($iW * $k / 100) . "\n";
     echo "\nk / Top / Left: $k: $top + $left";
 
-    $fortune = shell_exec("fortune");
-    echo "\nFortune: {$fortune}";
-    $fortune = str_replace('"', "'", trim($fortune));
-    $font_size = fontSize($fortune);
+    if(DISPLAY_FORTUNE) {
+        $fortune = shell_exec("fortune");
+        echo "\nFortune: {$fortune}";
+        $fortune = str_replace('"', "'", trim($fortune));
+        $font_size = fontSize($fortune);
+    
+        $convert = "convert -size 1100x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'";
+        echo "\n$convert\n";
+        shell_exec($convert);
+    
+        $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$left}+{$top} '{$walpaper_file}'";
+        echo "\n$convert\n";
+        shell_exec($convert);
+    
+        $convert = "convert '{$walpaper_file}' -size 1100x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'";
+        echo "\n$convert\n";
+        shell_exec($convert);
+    
+    } else {
+        copy($picture_file, $walpaper_file);
+    }
+}
 
-    $convert = "convert -size 1100x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'";
+if(DISPLAY_WATCH) {
+    $date = date(WATCH_FORMAT);
+    //$convert = "convert -gravity east -fill '#0007' -pointsize " . WATCH_FONT_SIZE . " -annotate +{$leftHB}+{$topHB} \"{$date}\"  '{$walpaper_file}' '{$time_file}'";
+    $convert = "convert -gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '#0007' -annotate +{$leftHB}+{$topHB} '{$date}' '{$walpaper_file}' '{$time_file}'"; 
     echo "\n$convert\n";
     shell_exec($convert);
 
-    $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$left}+{$top} '{$walpaper_file}'";
-    echo "\n$convert\n";
-    shell_exec($convert);
-
-    $convert = "convert '{$walpaper_file}' -size 1100x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'";
+    $convert = "convert -gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '" . WATCH_FONT_COLOR . "' -annotate +{$leftH}+{$topH} '{$date}' '{$time_file}' '{$time_file}'"; 
     echo "\n$convert\n";
     shell_exec($convert);
 }
-
-//$date = date("l jS \of F Y H:i");
-$date = date("H:i");
-$convert = "convert '{$walpaper_file}' -size 1100x -background '#fc00' -fill '#0007' -pointsize " . WATCH_FONT_SIZE . " caption:\"{$date}\" -geometry +{$leftHB}+{$topHB} -composite '{$time_file}'";
-echo "\n$convert\n";
-shell_exec($convert);
-
-$convert = "convert '{$time_file}' -size 1100x -background '#fc00' -fill '" . WATCH_FONT_COLOR . "' -pointsize " . WATCH_FONT_SIZE . " caption:\"{$date}\" -geometry +{$leftH}+{$topH} -composite '{$time_file}'";
-echo "\n$convert\n";
-shell_exec($convert);
 
 $gsettings = "gsettings set org.gnome.desktop.background picture-uri-dark file://{$time_file}";
 echo "\n{$gsettings}\n";
@@ -104,21 +111,21 @@ shell_exec($gsettings);
 unlink(file_get_contents("{$home}/2remove"));
 file_put_contents("{$home}/2remove", $time_file);
 //shell_exec("gsettings set org.gnome.desktop.background picture-options 'none'");
-shell_exec("gsettings set org.gnome.desktop.background picture-options 'centered'");
+shell_exec("gsettings set org.gnome.desktop.background picture-options '" . PictureOption::Centered->value . "'");
 
-function fontSize($text) {
+function fontSize(string $text) : int {
     $len = strlen($text);
     if($len < 30) {
-        return FONT_XL;
+        return FontSize::XL->value;
     } elseif($len < 120) {
-        return FONT_XL;
+        return FontSize::L->value;
     }
     elseif($len < 300) {
-        return FONT_M;
+        return FontSize::M->value;
     } elseif($len < 500) {
-        return FONT_S;
+        return FontSize::S->value;
     }
-    return FONT_XS;
+    return FontSize::XS->value;
 }
 
 //echo $minute . " " . $minute % $change_min;
