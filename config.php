@@ -14,7 +14,7 @@ const BORDER = 20;
 const SHADOW_OFFSET = 4;
 
 const BASE_FONT_SIZE = 32;
-const WATCH_FONT_SIZE = 108;
+const WATCH_FONT_SIZE = 80;
 
 const TEXT_COLOR = '#fffc';
 const BACKGROUND_COLOR = '#fc0';
