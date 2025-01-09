@@ -1,4 +1,4 @@
-AWESOME GNOME walpaper changer
+## AWESOME GNOME walpaper changer
 
 @todo
 - imagick is not installed by default
@@ -6,3 +6,5 @@ AWESOME GNOME walpaper changer
 - fix no slika_f.jpg bug
 - font size and scaling should be dependent on screen resolution
 - wallpaper is set only for dark mode 
+
+by**dy**

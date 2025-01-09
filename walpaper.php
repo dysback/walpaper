@@ -2,33 +2,19 @@
 
 require_once "init.php";
 
-$home = dirname(__FILE__);
+$home = __DIR__;
 $minute = date("i");
 
-$page = rand(0, 100);
-$item = rand(0, 9);
-
-$picture_file = "{$home}/slika.jpg";
 $fortune_file = "{$home}/slika_f.jpg";
 $walpaper_file = "{$home}/slika_w.jpg";
 $time_file = "{$home}/slika_t" . rand(0,10000) . ".jpg";
 
-
 if($minute % CHANGE_MIN == 0) {
-    $r2 = json_decode(shell_exec("curl " . AJAX_URL ."?page={$page}&per_page=10"));
-    $picture_link = $r2->photos[$item]->links->download;
-    //$links = getLinks($r2);
-    //$picture_link = $links[rand(0, count($links) - 1)];
-
-    echo $picture_link;
-    echo $picture_file;
-    shell_exec("wget $picture_link -O {$picture_file}");
+    $picture_file = fetcPicture();
 }
 
-$W = (int)trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)"));
-$H = (int)trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)"));
-$size = shell_exec("identify -ping -format '%w %h' '$picture_file'");
-[$iW, $iH] = explode(' ', $size);
+[$H, $W] = getScreenResolution();
+[$iW, $iH] = getPictureDimensions($picture_file);
 echo "\nScreen(HxW): $H x $W";
 echo "\nPicture(HxW): $iH x $iW";
 
@@ -59,13 +45,12 @@ $leftB = $left + BORDER + SHADOW_OFFSET;
 $topH = (int)$topH;
 $leftH = (int)$leftH;
 $topHB = (int)$topH + SHADOW_OFFSET;
-$leftHB = (int)$leftH + SHADOW_OFFSET;
+$leftHB = (int)$leftH - SHADOW_OFFSET;
 $k *= 100;
 
 if($minute % CHANGE_MIN == 0) {
     $convert = "convert '$picture_file' -resize $k% '$picture_file'";
-    echo "\n$convert";
-    shell_exec($convert);
+    imagick("'$picture_file' -resize $k% '$picture_file'");
 
     echo "\nPicture resized (HxW): " . (int)($iH * $k / 100) . " x " . (int)($iW * $k / 100) . "\n";
     echo "\nk / Top / Left: $k: $top + $left";
@@ -76,18 +61,13 @@ if($minute % CHANGE_MIN == 0) {
         $fortune = str_replace('"', "'", trim($fortune));
         $font_size = fontSize($fortune);
     
-        $convert = "convert -size 1100x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'";
-        echo "\n$convert\n";
-        shell_exec($convert);
-    
+        imagick("-size 1100x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'");
+
         $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$left}+{$top} '{$walpaper_file}'";
         echo "\n$convert\n";
         shell_exec($convert);
     
-        $convert = "convert '{$walpaper_file}' -size 1100x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'";
-        echo "\n$convert\n";
-        shell_exec($convert);
-    
+        imagick("'{$walpaper_file}' -size 1100x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'");
     } else {
         copy($picture_file, $walpaper_file);
     }
@@ -95,23 +75,19 @@ if($minute % CHANGE_MIN == 0) {
 
 if(DISPLAY_WATCH) {
     $date = date(WATCH_FORMAT);
-    //$convert = "convert -gravity east -fill '#0007' -pointsize " . WATCH_FONT_SIZE . " -annotate +{$leftHB}+{$topHB} \"{$date}\"  '{$walpaper_file}' '{$time_file}'";
-    $convert = "convert -gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '#0007' -annotate +{$leftHB}+{$topHB} '{$date}' '{$walpaper_file}' '{$time_file}'"; 
-    echo "\n$convert\n";
-    shell_exec($convert);
-
-    $convert = "convert -gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '" . WATCH_FONT_COLOR . "' -annotate +{$leftH}+{$topH} '{$date}' '{$time_file}' '{$time_file}'"; 
-    echo "\n$convert\n";
-    shell_exec($convert);
+    imagick("-gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '#0007' -annotate +{$leftHB}+{$topHB} '{$date}' '{$walpaper_file}' '{$time_file}'");
+    imagick("-gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '" . WATCH_FONT_COLOR . "' -annotate +{$leftH}+{$topH} '{$date}' '{$time_file}' '{$time_file}'");
 }
 
-$gsettings = "gsettings set org.gnome.desktop.background picture-uri-dark file://{$time_file}";
-echo "\n{$gsettings}\n";
-shell_exec($gsettings);
+gsettingsSet(GnomeSchema::DesktopBackground,  GnomeKey::PictureUri, "file://{$time_file}");
+gsettingsSet(GnomeSchema::DesktopBackground,  GnomeKey::PictureUriDark, "file://{$time_file}");
+
+
 unlink(file_get_contents("{$home}/2remove"));
+
 file_put_contents("{$home}/2remove", $time_file);
-//shell_exec("gsettings set org.gnome.desktop.background picture-options 'none'");
-shell_exec("gsettings set org.gnome.desktop.background picture-options '" . PictureOption::Centered->value . "'");
+//gsettingsSet(GnomeSchema::DesktopBackground,  GnomeKey::PictureOptions, PictureOption::None);
+gsettingsSet(GnomeSchema::DesktopBackground,  GnomeKey::PictureOptions, PictureOption::Centered);
 
 function fontSize(string $text) : int {
     $len = strlen($text);
@@ -128,4 +104,48 @@ function fontSize(string $text) : int {
     return FontSize::XS->value;
 }
 
+
+function gsettingsSet(GnomeSchema $schema, GnomeKey $key, mixed $value) : string {
+    if($value instanceof \BackedEnum) {
+        $value = $value->value;
+    }
+    $gsettings = "gsettings set {$schema->value} {$key->value} {$value}";
+    echo "\nGNOME: {$gsettings}";
+    $response = shell_exec($gsettings);
+    return $response ?? '';
+}
+
+function imagick($command) : string {
+    $convert = "convert $command"; 
+    echo "\n$convert";
+    $response = shell_exec($convert);
+    return $response ?? '';
+}
+
+function getScreenResolution() : array {
+    $W = (int)trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f1)"));
+    $H = (int)trim(shell_exec("echo $(xrandr --current | grep '*' | uniq | awk '{print $1}' | cut -d 'x' -f2)"));
+    return [$H, $W];
+}
+
+function getPictureDimensions(string $picture_file) : array {
+    $size = shell_exec("identify -ping -format '%w %h' '$picture_file'");
+    return explode(' ', $size);
+}
+
+function fetcPicture($picture_file = HOME . "/slika.jpg") {
+    $page = rand(0, 100);
+    $item = rand(0, 9);
+
+    $r2 = json_decode(shell_exec("curl " . AJAX_URL ."?page={$page}&per_page=10"));
+    $picture_link = $r2->photos[$item]->links->download;
+    //$links = getLinks($r2);
+    //$picture_link = $links[rand(0, count($links) - 1)];
+
+    echo $picture_link;
+    echo $picture_file;
+    shell_exec("wget $picture_link -O {$picture_file}");
+    return $picture_file;
+
+}
 //echo $minute . " " . $minute % $change_min;

@@ -1,5 +1,8 @@
 <?php
 
+$r = getScreenResolution();
+define('BASE_FONT_SIZE', round($r[1] / BASE_FONT_SIZE_COEF));
+
 define('FONT_XS', (int)round(BASE_FONT_SIZE * 1));
 define('FONT_S', (int)round(BASE_FONT_SIZE * 1.25));
 define('FONT_M', (int)round(BASE_FONT_SIZE * 1.5));
