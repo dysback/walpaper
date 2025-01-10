@@ -3,7 +3,7 @@
 const URL = "https://unsplash.com/wallpapers";
 const AJAX_URL = "https://unsplash.com/napi/landing_pages/wallpapers";
 
-const CHANGE_MIN = 1;
+const CHANGE_MIN = 10;
 const DISPLAY_FORTUNE = true;
 const DISPLAY_WATCH = true;
 

@@ -1,0 +1,11 @@
+Package: walpaper
+Version: 0.4-1
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: php-cli (>= 8.3), curl, php8.3-curl, imagemagick, fortune
+Maintainer: Damir Zelenika <damir.zelenika@gmail.com>
+Description: GNOME walpaper changer
+ When you need some sunshine, just run this
+ small program!
+ the space before each line in the description is important
