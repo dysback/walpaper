@@ -36,17 +36,19 @@ if($ihpw > $hpw) {
     $topH  = 0.8 * $H;
     $leftH = ($iW * $k - $W) / 2 + 0.05 * $W;
 }
-$top = (int)$top;
-$left = (int)$left;
+$top = (int)$top + BORDER;
+$left = (int)$left + BORDER;
 
-$topB = $top + BORDER + SHADOW_OFFSET;
-$leftB = $left + BORDER + SHADOW_OFFSET;
+$topB = $top - BORDER + SHADOW_OFFSET;
+$leftB = $left - BORDER + SHADOW_OFFSET;
 
 $topH = (int)$topH;
 $leftH = (int)$leftH;
 $topHB = (int)$topH + SHADOW_OFFSET;
 $leftHB = (int)$leftH - SHADOW_OFFSET;
 $k *= 100;
+
+$fortune_width = (int)(0.58 * $W) - 1 * BORDER; 
 
 if($minute % CHANGE_MIN == 0) {
     $convert = "convert '$picture_file' -resize $k% '$picture_file'";
@@ -61,13 +63,13 @@ if($minute % CHANGE_MIN == 0) {
         $fortune = str_replace('"', "'", trim($fortune));
         $font_size = fontSize($fortune);
     
-        imagick("-size 1100x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'");
+        imagick("-size {$fortune_width}x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'");
 
-        $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$left}+{$top} '{$walpaper_file}'";
+        $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$leftB}+{$topB} '{$walpaper_file}'";
         echo "\n$convert\n";
         shell_exec($convert);
     
-        imagick("'{$walpaper_file}' -size 1100x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$leftB}+{$topB} -composite '{$walpaper_file}'");
+        imagick("'{$walpaper_file}' -size {$fortune_width}x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$left}+{$top} -composite '{$walpaper_file}'");
     } else {
         copy($picture_file, $walpaper_file);
     }
@@ -148,4 +150,4 @@ function fetcPicture($picture_file = HOME . "/slika.jpg") {
     return $picture_file;
 
 }
-//echo $minute . " " . $minute % $change_min;
+echo $minute . " " . $minute % CHANGE_MIN;
