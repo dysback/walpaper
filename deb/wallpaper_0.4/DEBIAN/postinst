@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+echo "u $USER"
+echo "su $SUDO_USER"
+GUI_USER=y
+if [ "x$SUDO_USER" == "x" ]; then
+    GUI_USER=$USER
+    echo "x$SUDO_USER"
+else
+    GUI_USER=$SUDO_USER
+    echo 2
+fi
+
+echo "gu ${GUI_USER}"
+
+updated="$(crontab -l -u ${GUI_USER} | grep wallpaper/wallpaper.sh | wc -l)"
+
+if [[ $updated ==  "0" ]] ; then
+    echo "Cron job doesn't exist. Addding ..."
+    echo "Creating crontab file backup."
+    cp /var/spool/cron/crontabs/${GUI_USER} /var/spool/cron/crontabs/${GUI_USER}.wp.$(date '+%Y%m%d-%H%M%S').bak
+    if [ $? -ne 0 ] ; then
+        echo "Can't create backuop. Exiting.";
+        exit 1
+    fi
+    (crontab -l -u ${GUI_USER} 2>/dev/null; echo "* * * * * /usr/local/bin/wallpaper/wallpaper.sh >> /usr/local/bin/wallpaper/wallpaper.log 2>&1") | crontab -u ${GUI_USER} -
+    echo "Cron job added."
+
+else
+    echo "Cron job already exists. Skipping ..."
+fi
