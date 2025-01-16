@@ -1,0 +1,6 @@
+echo ">> $1 <<"
+
+if [ "$1" = purge ]; then
+  echo "Forcing directory removal ..."
+  rm -rf /usr/local/bin/wallpaper
+fi

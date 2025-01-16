@@ -6,11 +6,13 @@ $home = __DIR__;
 $minute = date("i");
 
 $fortune_file = "{$home}/slika_f.jpg";
-$walpaper_file = "{$home}/slika_w.jpg";
+$wallpaper_file = "{$home}/slika_w.jpg";
 $time_file = "{$home}/slika_t" . rand(0,10000) . ".jpg";
 
 if($minute % CHANGE_MIN == 0) {
     $picture_file = fetcPicture();
+} else {
+    $picture_file = HOME . "/slika.jpg";
 }
 
 [$H, $W] = getScreenResolution();
@@ -44,6 +46,8 @@ $leftB = $left - BORDER + SHADOW_OFFSET;
 
 $topH = (int)$topH;
 $leftH = (int)$leftH;
+echo "\nK TopH LeftH): $k $topH $leftH ";
+
 $topHB = (int)$topH + SHADOW_OFFSET;
 $leftHB = (int)$leftH - SHADOW_OFFSET;
 $k *= 100;
@@ -65,19 +69,19 @@ if($minute % CHANGE_MIN == 0) {
     
         imagick("-size {$fortune_width}x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'");
 
-        $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$leftB}+{$topB} '{$walpaper_file}'";
+        $convert = "composite  -dissolve " . FORTUNE_DISOLVE . " '{$fortune_file}' '{$picture_file}' -geometry +{$leftB}+{$topB} '{$wallpaper_file}'";
         echo "\n$convert\n";
         shell_exec($convert);
     
-        imagick("'{$walpaper_file}' -size {$fortune_width}x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$left}+{$top} -composite '{$walpaper_file}'");
+        imagick("'{$wallpaper_file}' -size {$fortune_width}x -background '#fc00' -fill '" . TEXT_COLOR . "' -pointsize {$font_size} caption:\"{$fortune}\" -geometry +{$left}+{$top} -composite '{$wallpaper_file}'");
     } else {
-        copy($picture_file, $walpaper_file);
+        copy($picture_file, $wallpaper_file);
     }
 }
 
 if(DISPLAY_WATCH) {
     $date = date(WATCH_FORMAT);
-    imagick("-gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '#0007' -annotate +{$leftHB}+{$topHB} '{$date}' '{$walpaper_file}' '{$time_file}'");
+    imagick("-gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '#0007' -annotate +{$leftHB}+{$topHB} '{$date}' '{$wallpaper_file}' '{$time_file}'");
     imagick("-gravity NorthEast -pointsize " . WATCH_FONT_SIZE . " -fill '" . WATCH_FONT_COLOR . "' -annotate +{$leftH}+{$topH} '{$date}' '{$time_file}' '{$time_file}'");
 }
 

@@ -1,5 +1,5 @@
 
-## AWESOME :p GNOME walpaper changer
+## AWESOME :p GNOME wallpaper changer
 
 ### Description
 Lorem ipsum
@@ -11,10 +11,11 @@ Lorem ipsum
 - 0.5 (preffered)
   - package as gnome extension
   - improve documentation (README and install shell output)
-  - set default walpapper before firsts ctontab jobs
+  - set default wallpapper before firsts ctontab jobs
+  - uninstall script (remove crontab, purge files, kill process ...)
 - further
-  - offline walpapers
-  - walpaper cache-ing
+  - offline wallpapers
+  - wallpaper cache-ing
   - additional image sources
   - additional content
     - weather and forecasts

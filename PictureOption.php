@@ -2,7 +2,7 @@
 
 enum PictureOption : string {
     case None = 'none';
-    case Wallpaper = 'walpaper';
+    case Wallpaper = 'wallpaper';
     case Centered = 'centered';
     case Scaled = 'scaled';
     case Streched = 'streched';

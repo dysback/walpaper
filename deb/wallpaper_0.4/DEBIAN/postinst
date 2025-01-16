@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+
 echo "u $USER"
 echo "su $SUDO_USER"
-GUI_USER=y
+
 if [ "x$SUDO_USER" == "x" ]; then
     GUI_USER=$USER
     echo "x$SUDO_USER"
@@ -11,6 +12,16 @@ else
 fi
 
 echo "gu ${GUI_USER}"
+
+echo "Initial wallpaper setup ..."
+su ${GUI_USER} bash -c '/usr/bin/php /usr/local/bin/wallpaper/wallpaper.php'
+#sudo -u  ${GUI_USER} env XDG_RUNTIME_DIR="/run/user/$(id -u)" echo $DISPLAY && php /usr/local/bin/wallpaper/wallpaper.php
+# env DISPLAY=:0.0 XDG_RUNTIME_DIR=/run/user/dzelenika DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus" bash -c "echo $DISPLAY && echo $XDG_RUNTIME_DIR && echo $DBUS_SESSION_BUS_ADDRESS && sudo -u ${GUI_USER} php /usr/local/bin/wallpaper/wallpaper.php"
+echo "... done" 
+
+
+
+
 
 updated="$(crontab -l -u ${GUI_USER} | grep wallpaper/wallpaper.sh | wc -l)"
 
