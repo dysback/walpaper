@@ -62,9 +62,7 @@ if($minute % CHANGE_MIN == 0) {
     echo "\nk / Top / Left: $k: $top + $left";
 
     if(DISPLAY_FORTUNE) {
-        $fortune = shell_exec("fortune");
-        echo "\nFortune: {$fortune}";
-        $fortune = str_replace('"', "'", trim($fortune));
+        $fortune = getFortune();
         $font_size = fontSize($fortune);
     
         imagick("-size {$fortune_width}x -pointsize {$font_size} -background '" . BACKGROUND_COLOR . "' -fill '" . TEXT_COLOR . "'  caption:\"{$fortune}\"  -bordercolor '" . BACKGROUND_COLOR . "' -border " . BORDER . " '{$fortune_file}'");
@@ -154,4 +152,26 @@ function fetcPicture($picture_file = HOME . "/slika.jpg") {
     return $picture_file;
 
 }
+
+function getFortune() {
+    if(rand(0, 100) <= MURPHY_FORTUNE) {
+        $arrMurphy = [];
+        if(($handle = fopen("murphy.csv", "r")) !== FALSE) {
+            while (($data = fgetcsv($handle)) !== FALSE) {
+                $arrMurphy[] = $data;
+            }
+            fclose($handle);
+            //die(print_r($arrMurphy, true));
+            $itemNr = rand(0, count($arrMurphy));
+            return $arrMurphy[$itemNr][1] . "\n\n" . $arrMurphy[$itemNr][0]; 
+        }
+        return "Murphy works overtime; :p";
+    } else {
+        $fortune = shell_exec("fortune");
+        echo "\nFortune: {$fortune}";
+        $fortune = str_replace('"', "'", trim($fortune));
+        return $fortune;    
+    }
+}
+
 echo $minute . " " . $minute % CHANGE_MIN;

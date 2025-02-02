@@ -21,4 +21,5 @@ const BACKGROUND_COLOR = '#fc0';
 const WATCH_FONT_COLOR = '#dddc';
 
 const FORTUNE_DISOLVE = '25';
+const MURPHY_FORTUNE = 20; // 0 no -> 100 only murphy
 
